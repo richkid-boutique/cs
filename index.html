@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RichKid-boutique | Luxury Collection</title>
+    <style>
+        :root { --gold: #D4AF37; --magenta: #C70066; --black: #111; --white: #fff; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--white); color: var(--black); padding-bottom: 120px; overflow-x: hidden; }
+        
+        .slideshow-container { width: 100%; height: 250px; position: relative; overflow: hidden; background-color: #000; }
+        .slide { display: none; width: 100%; height: 100%; object-fit: cover; }
+        
+        .inner-circle { background: var(--black); color: var(--gold); padding: 22px; text-align: center; border-bottom: 3px solid var(--gold); }
+        .inner-circle h3 { margin: 0 0 5px 0; font-size: 16px; letter-spacing: 2px; text-transform: uppercase; }
+        .inner-circle p { margin: 0; font-size: 12px; color: #fff; opacity: 0.8; }
+        .handle { color: var(--magenta); font-weight: bold; }
+        .insta-btn { display: inline-block; margin-top: 12px; background: var(--gold); color: #000; padding: 12px 25px; text-decoration: none; font-weight: bold; font-size: 11px; border-radius: 25px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .search-container { padding: 15px; background: #fff; }
+        .search-input { width: 100%; padding: 14px; border: 1px solid #eee; border-radius: 10px; font-size: 14px; background: #f9f9f9; outline: none; }
+        
+        .filter-menu { display: flex; overflow-x: auto; background: #fff; padding: 10px 15px 20px; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 100; gap: 10px; scrollbar-width: none; }
+        .filter-menu::-webkit-scrollbar { display: none; }
+        .filter-btn { padding: 10px 22px; border: 1px solid #ddd; background: #fff; border-radius: 25px; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap; text-transform: uppercase; }
+        .filter-btn.active { background: var(--black); color: #fff; border-color: var(--black); }
+        .filter-btn.special { border-color: var(--magenta); color: var(--magenta); }
+        
+        .product-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 12px; }
+        .product-card { border: 1px solid #f2f2f2; border-radius: 8px; overflow: hidden; background: #fff; display: none; flex-direction: column; }
+        .product-image { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
+        .product-info { padding: 12px; text-align: center; }
+        .price-tag { color: var(--magenta); font-weight: bold; font-size: 16px; margin-bottom: 10px; }
+        .size-select { width: 100%; padding: 10px; font-size: 12px; margin-bottom: 12px; border: 1px solid #eee; border-radius: 5px; background: #fff; }
+        .add-btn { background: var(--black); color: white; border: none; width: 100%; padding: 14px; font-size: 11px; font-weight: bold; cursor: pointer; text-transform: uppercase; border-radius: 5px; }
+        
+        .wall-of-fame { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 5px; }
+        .fame-img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border: 1px solid #f0f0f0; display: none; }
+        
+        .cart-float { position: fixed; bottom: 20px; left: 5%; width: 90%; background: var(--gold); color: #fff; padding: 20px 0; border-radius: 50px; font-weight: bold; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 1000; cursor: pointer; text-align: center; font-size: 14px; text-transform: uppercase; border: none; }
+    </style>
+</head>
+<body>
+
+    <div class="slideshow-container" id="slideshow">
+        <img class="slide" src="hero1.jpg" onerror="this.remove()">
+        <img class="slide" src="hero2.jpg" onerror="this.remove()">
+        <img class="slide" src="hero3.jpg" onerror="this.remove()">
+        <img class="slide" src="hero4.jpg" onerror="this.remove()">
+        <img class="slide" src="hero5.jpg" onerror="this.remove()">
+        <img class="slide" src="hero6.jpg" onerror="this.remove()">
+    </div>
+
+    <div class="inner-circle">
+        <h3>JOIN THE INNER CIRCLE</h3>
+        <p>Follow <span class="handle">@richKid_boutique.cs</span> for 10% OFF</p>
+        <a href="https://instagram.com/richKid_boutique.cs" class="insta-btn" target="_blank">Follow Instagram</a>
+    </div>
+
+    <div class="search-container">
+        <input type="text" class="search-input" placeholder="Search (e.g. Dress #1)..." onkeyup="searchItems()">
+    </div>
+
+    <div class="filter-menu">
+        <button class="filter-btn active" onclick="showSection('items', 'bikini', this)">Bikini</button>
+        <button class="filter-btn" onclick="showSection('items', 'three-piece', this)">3-Piece</button>
+        <button class="filter-btn" onclick="showSection('items', 'dress', this)">Dress</button>
+        <button class="filter-btn" onclick="showSection('items', 'cover-up', this)">Cover-Up</button>
+        <button class="filter-btn special" onclick="showSection('items', 'new', this)">New</button>
+        <button class="filter-btn special" onclick="showSection('items', 'deals', this)">Hot Deals</button>
+        <button class="filter-btn" onclick="showSection('fame', '', this)">Spotted 👑</button>
+    </div>
+
+    <div id="items-section">
+        <div id="product-display" class="product-grid"></div>
+    </div>
+
+    <div id="fame-section" style="display:none;">
+        <div style="text-align: center; padding: 25px;">
+            <h2 style="text-transform: uppercase; letter-spacing: 2px; margin: 0; font-size: 18px;">Spotted: Our RichKids</h2>
+            <div id="fame-grid" class="wall-of-fame"></div>
+        </div>
+    </div>
+
+    <button class="cart-float" onclick="checkoutWhatsApp()">
+        Checkout via WhatsApp (<span id="cart-count">0</span>)
+    </button>
+
+    <script>
+        let cart = [];
+        let slideIndex = 0;
+
+        const inventory = {\n            'bikini': { \n                count: 100, \n                prefix: 'bikini', \n                label: 'Bikini',\n                prices: ["5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500", "5,500"]\n            },\n            'three-piece': { \n                count: 100, \n                prefix: 'three-piece', \n                label: '3-Piece Set',\n                prices: ["8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500", "8,500"]\n            },\n            'dress': { \n                count: 100, \n                prefix: 'dress', \n                label: 'Dress',\n                prices: ["7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500", "7,500"]\n            },\n            'cover-up': { \n                count: 100, \n                prefix: 'cover-up', \n                label: 'Cover-Up',\n                prices: ["4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500", "4,500"]\n            },\n            'new': { \n                count: 100, \n                prefix: 'new', \n                label: 'New Arrival',\n                prices: ["6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500", "6,500"]\n            },\n            'deals': { \n                count: 100, \n                prefix: 'deal', \n                label: 'Hot Deal 🔥',\n                prices: ["3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500", "3,500"]\n            },\n        };
+
+        function startSlideshow() {
+            let slides = document.getElementsByClassName("slide");
+            if (slides.length === 0) return;
+            for (let i = 0; i < slides.length; i++) { slides[i].style.display = "none"; }
+            slideIndex++;
+            if (slideIndex > slides.length) {slideIndex = 1}
+            slides[slideIndex-1].style.display = "block";
+            setTimeout(startSlideshow, 10000);
+        }
+
+        function showSection(section, category, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if (section === 'fame') {
+                document.getElementById('items-section').style.display = 'none';
+                document.getElementById('fame-section').style.display = 'block';
+                loadFameGrid();
+            } else {
+                document.getElementById('items-section').style.display = 'block';
+                document.getElementById('fame-section').style.display = 'none';
+                filterItems(category);
+            }
+            window.scrollTo(0,0);
+        }
+
+        function filterItems(category) {
+            const container = document.getElementById('product-display');
+            container.innerHTML = ''; 
+            const data = inventory[category];
+
+            for (let i = 1; i <= data.count; i++) {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.setAttribute('data-name', `${data.label} #${i}`);
+                
+                const itemPrice = data.prices[i-1] || "TBD";
+
+                card.innerHTML = `
+                    <img src="${data.prefix}${i}.jpg" class="product-image" onload="this.parentElement.style.display='flex'" onerror="this.parentElement.style.display='none'">
+                    <div class="product-info">
+                        <div class="price-tag">$${itemPrice} JMD</div>
+                        <select id="size-${category}-${i}" class="size-select">
+                            <option>Small</option><option>Medium</option><option>Large</option><option>XL</option>
+                        </select>
+                        <button class="add-btn" onclick="addToCart('${data.label} #${i}', 'size-${category}-${i}', '${itemPrice}')">Add to Bag</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            }
+        }
+
+        function loadFameGrid() {
+            const grid = document.getElementById('fame-grid');
+            grid.innerHTML = '';
+            for (let i = 1; i <= 50; i++) {
+                const img = document.createElement('img');
+                img.src = `customer${i}.jpg`;
+                img.className = 'fame-img';
+                img.onload = function() { this.style.display = 'block'; };
+                img.onerror = function() { this.style.display = 'none'; };
+                grid.appendChild(img);
+            }
+        }
+
+        function searchItems() {
+            let input = document.querySelector('.search-input').value.toLowerCase();
+            let cards = document.querySelectorAll('.product-card');
+            cards.forEach(card => {
+                let name = card.getAttribute('data-name').toLowerCase();
+                card.style.display = name.includes(input) ? "flex" : "none";
+            });
+        }
+
+        function addToCart(name, sizeId, price) {
+            let size = document.getElementById(sizeId).value;
+            cart.push(`${name} (${size}) - $${price} JMD`);
+            document.getElementById('cart-count').innerText = cart.length;
+        }
+
+        function checkoutWhatsApp() {
+            if(cart.length === 0) return alert("Your bag is empty!");
+            let msg = "Hello RichKid-boutique! 👑 I'd like to order:\n\n" + cart.join("\n");
+            window.open(`https://wa.me/18763047407?text=${encodeURIComponent(msg)}`);
+        }
+
+        window.onload = () => {
+            filterItems('bikini');
+            startSlideshow();
+        };
+    </script>
+</body>
+</html>
