@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RichKid-boutique | Luxury Collection</title>
+    <style>
+        :root { --gold: #D4AF37; --magenta: #C70066; --black: #111; --white: #fff; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--white); color: var(--black); padding-bottom: 120px; }
+        
+        /* FIXED: Height is now flexible and background-size is 'contain' to prevent cropping */
+        .slideshow-container { 
+            width: 100%; 
+            height: auto; 
+            min-height: 250px;
+            max-height: 550px;
+            position: relative; 
+            overflow: hidden; 
+            background-color: #fff; /* White background makes portrait images look seamless */
+        }
+        
+        .slide { 
+            width: 100%; 
+            height: auto; 
+            display: none;
+            object-fit: contain; /* CRITICAL: Shows 100% of the image */
+        }
+
+        .inner-circle { background: var(--black); color: var(--gold); padding: 25px 20px; text-align: center; border-top: 3px solid var(--gold); }
+        .inner-circle h3 { margin-bottom: 5px; font-size: 18px; letter-spacing: 2px; text-transform: uppercase; }
+        .handle { color: var(--magenta); font-weight: bold; }
+        .insta-btn { display: inline-block; margin-top: 15px; background: var(--gold); color: #000; padding: 12px 35px; text-decoration: none; font-weight: bold; border-radius: 50px; text-transform: uppercase; font-size: 12px; }
+
+        .filter-menu { display: flex; overflow-x: auto; background: #fff; padding: 15px; position: sticky; top: 0; z-index: 100; gap: 10px; border-bottom: 1px solid #eee; }
+        .filter-menu::-webkit-scrollbar { display: none; }
+        .filter-btn { padding: 10px 20px; border: 1px solid #ddd; background: #fff; border-radius: 25px; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap; }
+        .filter-btn.active { background: var(--black); color: #fff; border-color: var(--black); }
+
+        .product-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 12px; }
+        .product-card { border: 1px solid #f2f2f2; border-radius: 8px; overflow: hidden; display: none; flex-direction: column; background: #fff; }
+        .product-image { width: 100%; height: auto; object-fit: contain; background: #f9f9f9; }
+        .product-info { padding: 12px; text-align: center; }
+        .price-tag { color: var(--magenta); font-weight: bold; font-size: 16px; margin-bottom: 10px; }
+        .add-btn { background: var(--black); color: white; border: none; width: 100%; padding: 14px; font-size: 11px; font-weight: bold; text-transform: uppercase; border-radius: 5px; cursor: pointer; }
+
+        .cart-float { position: fixed; bottom: 20px; left: 5%; width: 90%; background: var(--gold); color: #fff; padding: 20px 0; border-radius: 50px; font-weight: bold; text-align: center; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 1000; font-size: 14px; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+
+    <div class="slideshow-container" id="slideshow">
+        <img class="slide" src="hero1.jpg" onerror="this.src='hero1.png';">
+        <img class="slide" src="hero2.jpg" onerror="this.src='hero2.png';">
+        <img class="slide" src="hero3.jpg" onerror="this.src='hero3.png';">
+        <img class="slide" src="hero4.jpg" onerror="this.src='hero4.png';">
+        <img class="slide" src="hero5.jpg" onerror="this.src='hero5.png';">
+        <img class="slide" src="hero6.jpg" onerror="this.src='hero6.png';">
+    </div>
+
+    <div class="inner-circle">
+        <h3>JOIN THE INNER CIRCLE</h3>
+        <p>Follow <span class="handle">@richKid_boutique.cs</span></p>
+        <a href="https://instagram.com/richKid_boutique.cs" class="insta-btn" target="_blank">Follow Instagram</a>
+    </div>
+
+    <div class="filter-menu">
+        <button class="filter-btn active" onclick="showCategory('bikini', this)">Bikinis</button>
+        <button class="filter-btn" onclick="showCategory('dress', this)">Dresses</button>
+        <button class="filter-btn" onclick="showCategory('shirt', this)">Shirts</button>
+        <button class="filter-btn" onclick="showCategory('cologne', this)">Cologne</button>
+        <button class="filter-btn" onclick="showCategory('bracelet', this)">Bracelets</button>
+        <button class="filter-btn" onclick="showCategory('lipstick', this)">Lipstick</button>
+    </div>
+
+    <div id="product-display" class="product-grid"></div>
+
+    <button class="cart-float" onclick="checkoutWhatsApp()">
+        Checkout via WhatsApp (<span id="cart-count">0</span>)
+    </button>
+
+    <script>
+        let cart = [];
+        let slideIndex = 0;
+
+        const inventory = {
+            'bikini': { prefix: 'bikini', label: 'Bikini', prices: ["5,500", "5,500"] },
+            'dress': { prefix: 'dress', label: 'Dress', prices: ["7,500", "7,500"] },
+            'shirt': { prefix: 'shirt', label: 'Shirt', prices: ["4,500", "4,500"] },
+            'cologne': { prefix: 'cologne', label: 'Cologne', prices: ["12,000", "15,000"] },
+            'bracelet': { prefix: 'bracelet', label: 'Bracelet', prices: ["2,500", "3,000"] },
+            'lipstick': { prefix: 'lipstick', label: 'Lipstick', prices: ["1,800", "2,200"] }
+        };
+
+        function startSlideshow() {
+            let slides = document.querySelectorAll(".slide");
+            slides.forEach(s => s.style.display = "none");
+            slideIndex++;
+            if (slideIndex > slides.length) {slideIndex = 1}
+            if(slides[slideIndex-1]) slides[slideIndex-1].style.display = "block";
+            setTimeout(startSlideshow, 4000);
+        }
+
+        function showCategory(category, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const container = document.getElementById('product-display');
+            container.innerHTML = '';
+            const data = inventory[category];
+
+            for (let i = 1; i <= 100; i++) {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                const price = data.prices[i-1] || "TBD";
+
+                card.innerHTML = `
+                    <img src="${data.prefix}${i}.png" class="product-image" 
+                         onerror="this.src='${data.prefix}${i}.jpg'; this.onerror=function(){this.closest('.product-card').remove();}" 
+                         onload="this.closest('.product-card').style.display='flex'">
+                    <div class="product-info">
+                        <div class="price-tag">$${price} JMD</div>
+                        <button class="add-btn" onclick="addToCart('${data.label} #${i}', '${price}')">Add to Bag</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            }
+        }
+
+        function addToCart(item, price) {
+            cart.push(`${item} ($${price})`);
+            document.getElementById('cart-count').innerText = cart.length;
+        }
+
+        function checkoutWhatsApp() {
+            if(cart.length === 0) return alert("Bag is empty!");
+            let msg = "Hello RichKid-boutique! 👑 I'd like to order: " + cart.join(", ");
+            window.open("https://wa.me/18763047407?text=" + encodeURIComponent(msg));
+        }
+
+        window.onload = () => {
+            startSlideshow();
+            showCategory('bikini', document.querySelector('.filter-btn.active'));
+        };
+    </script>
+</body>
+</html>
