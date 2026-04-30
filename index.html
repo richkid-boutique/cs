@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RichKid-boutique | Luxury Collection</title>
+    <style>
+        :root { --gold: #D4AF37; --magenta: #C70066; --black: #111; --white: #fff; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--white); color: var(--black); padding-bottom: 150px; }
+        
+        .slideshow-container { width: 100%; position: relative; background-color: #fff; line-height: 0; }
+        .slide { width: 100%; height: auto; display: none; object-fit: contain; }
+
+        .inner-circle { background: var(--black); color: var(--gold); padding: 25px 20px; text-align: center; border-top: 3px solid var(--gold); }
+        .inner-circle h3 { margin-bottom: 5px; font-size: 18px; letter-spacing: 2px; text-transform: uppercase; }
+        .handle { color: var(--magenta); font-weight: bold; }
+        .insta-btn { display: inline-block; margin-top: 15px; background: var(--gold); color: #000; padding: 12px 35px; text-decoration: none; font-weight: bold; border-radius: 50px; text-transform: uppercase; font-size: 12px; }
+
+        .filter-menu { display: flex; overflow-x: auto; background: #fff; padding: 15px; position: sticky; top: 0; z-index: 100; gap: 10px; border-bottom: 1px solid #eee; }
+        .filter-menu::-webkit-scrollbar { display: none; }
+        .filter-btn { padding: 10px 20px; border: 1px solid #ddd; background: #fff; border-radius: 25px; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap; }
+        .filter-btn.active { background: var(--black); color: #fff; border-color: var(--black); }
+
+        .product-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 12px; }
+        .product-card { border: 1px solid #f2f2f2; border-radius: 8px; overflow: hidden; display: none; flex-direction: column; background: #fff; }
+        .product-image { width: 100%; height: auto; object-fit: contain; }
+        .product-info { padding: 12px; text-align: center; }
+        .price-tag { color: var(--magenta); font-weight: bold; font-size: 16px; margin-bottom: 10px; }
+        
+        .size-selector { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 11px; outline: none; background: #fff; cursor: pointer; }
+        .add-btn { background: var(--black); color: white; border: none; width: 100%; padding: 14px; font-size: 11px; font-weight: bold; text-transform: uppercase; border-radius: 5px; cursor: pointer; }
+
+        .checkout-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; padding: 15px; border-top: 1px solid #eee; z-index: 1000; text-align: center; }
+        .cart-float { width: 90%; background: var(--gold); color: #000; padding: 18px 0; border-radius: 50px; font-weight: bold; border: none; font-size: 13px; text-transform: uppercase; cursor: pointer; }
+        .clear-cookie-btn { display: block; margin: 10px auto 0; font-size: 10px; color: #999; background: none; border: none; text-decoration: underline; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="slideshow-container" id="slideshow">
+        <img class="slide" src="hero1.jpg" onerror="this.src='hero1.png';">
+        <img class="slide" src="hero2.jpg" onerror="this.src='hero2.png';">
+        <img class="slide" src="hero3.jpg" onerror="this.src='hero3.png';">
+    </div>
+
+    <div class="inner-circle">
+        <h3>JOIN THE INNER CIRCLE</h3>
+        <p>Follow <span class="handle">@richKid_boutique.cs</span></p>
+        <a href="https://instagram.com/richKid_boutique.cs" class="insta-btn" target="_blank">Follow Instagram</a>
+    </div>
+
+    <div class="filter-menu">
+        <button class="filter-btn active" onclick="showCategory('bikini', this)">Bikinis</button>
+        <button class="filter-btn" onclick="showCategory('dress', this)">Dresses</button>
+        <button class="filter-btn" onclick="showCategory('shirt', this)">Shirts</button>
+        <button class="filter-btn" onclick="showCategory('cologne', this)">Cologne</button>
+    </div>
+
+    <div id="product-display" class="product-grid"></div>
+
+    <div class="checkout-footer">
+        <button class="cart-float" onclick="checkoutWhatsApp()">
+            Checkout Bag (<span id="cart-count">0</span>)
+        </button>
+        <button class="clear-cookie-btn" onclick="clearCart()">Clear Bag / Reset Cookies</button>
+    </div>
+
+    <script>
+        let cart = JSON.parse(localStorage.getItem('rk_cart')) || [];
+        let slideIndex = 0;
+
+        /* MANUAL PRICING & DATA SECTION */
+        const inventory = {
+            'bikini': { 
+                prefix: 'bikini', 
+                label: 'Bikini', 
+                prices: ["3000", "4500", "5500", "6000"], // Bikini 1: $3000, Bikini 2: $4500...
+                sizes: ["S", "M", "L"]
+            },
+            'dress': { 
+                prefix: 'dress', 
+                label: 'Dress', 
+                prices: ["7500", "8500"], 
+                sizes: ["S", "M", "L", "XL"]
+            },
+            'shirt': { 
+                prefix: 'shirt', 
+                label: 'Shirt', 
+                prices: ["4500", "5000", "5500"], 
+                sizes: ["M", "L", "XL", "XXL"]
+            },
+            'cologne': { 
+                prefix: 'cologne', 
+                label: 'Cologne', 
+                prices: ["12000", "15000"], 
+                sizes: ["Standard"]
+            }
+        };
+
+        function startSlideshow() {
+            let slides = document.querySelectorAll(".slide");
+            slides.forEach(s => s.style.display = "none");
+            slideIndex++;
+            if (slideIndex > slides.length) {slideIndex = 1}
+            if(slides[slideIndex-1]) slides[slideIndex-1].style.display = "block";
+            setTimeout(startSlideshow, 4000);
+        }
+
+        function showCategory(category, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const container = document.getElementById('product-display');
+            container.innerHTML = '';
+            const data = inventory[category];
+
+            // Only creates as many products as you have prices listed
+            for (let i = 0; i < data.prices.length; i++) {
+                const itemNum = i + 1;
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                const currentPrice = data.prices[i];
+                let sizeOptions = data.sizes.map(s => `<option value="${s}">${s}</option>`).join('');
+
+                card.innerHTML = `
+                    <img src="${data.prefix}${itemNum}.png" class="product-image" 
+                         onerror="this.src='${data.prefix}${itemNum}.jpg'; this.onerror=function(){this.closest('.product-card').remove();}" 
+                         onload="this.closest('.product-card').style.display='flex'">
+                    <div class="product-info">
+                        <div class="price-tag">$${currentPrice} JMD</div>
+                        <select class="size-selector" id="size-${category}-${itemNum}">
+                            <option value="">Select Size</option>
+                            ${sizeOptions}
+                        </select>
+                        <button class="add-btn" onclick="addToCart('${data.label} #${itemNum}', '${currentPrice}', '${category}', ${itemNum})">Add to Bag</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            }
+        }
+
+        function addToCart(item, price, category, index) {
+            const sizeVal = document.getElementById(`size-${category}-${index}`).value;
+            if(!sizeVal) return alert("Please select a size first!");
+            
+            cart.push(`${item} (Size: ${sizeVal}) - $${price}`);
+            localStorage.setItem('rk_cart', JSON.stringify(cart));
+            updateCartCount();
+        }
+
+        function updateCartCount() {
+            document.getElementById('cart-count').innerText = cart.length;
+        }
+
+        function clearCart() {
+            if(confirm("Are you sure you want to clear your bag?")) {
+                cart = [];
+                localStorage.removeItem('rk_cart');
+                updateCartCount();
+            }
+        }
+
+        function checkoutWhatsApp() {
+            if(cart.length === 0) return alert("Your bag is empty!");
+            let msg = "Hello RichKid-boutique! 👑 I'd like to order: \n\n" + cart.join("\n");
+            window.open("https://wa.me/18763047407?text=" + encodeURIComponent(msg));
+        }
+
+        window.onload = () => {
+            startSlideshow();
+            showCategory('bikini', document.querySelector('.filter-btn.active'));
+            updateCartCount();
+        };
+    </script>
+</body>
+</html>
